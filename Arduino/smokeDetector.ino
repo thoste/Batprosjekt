@@ -1,5 +1,5 @@
 void smokeDetector(){
-	// Declare at the beginning of the program: 
+	// Declare at the beginning of the main program: 
 	//
 	// const int  smokeDetectorPin = 2;
 	// int smokeDetectorCounter = 0;   
