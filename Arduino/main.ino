@@ -1,7 +1,7 @@
 // The main program 
 
 const int smokeDetectorPin = 2;
-bool smokeAlarmState = false;
+volatile bool smokeAlarmState = false;
 
 void setup(){
 	pinMode(smokeDetectorPin, INPUT);

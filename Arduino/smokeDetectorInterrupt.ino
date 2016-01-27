@@ -6,6 +6,6 @@ void smokeDetectorInterrupt(int interruptPin){
 
 void smokeAlarm(){
 	// Declare at the beginning of main:
-	// bool smokeAlarmState = false;
+	// volatile bool smokeAlarmState = false;
 	smokeAlarmState = true;
 }
