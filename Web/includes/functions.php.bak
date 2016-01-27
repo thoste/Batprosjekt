@@ -1,0 +1,179 @@
+<meta charset = "UTF-8">
+<?php
+
+/*
+"addedToday" returnerer TRUE hvis $time (på formatet "yyy-mm-dd hh:mm:ss") er dagens dato.
+Brukes ikke i mainExample.php men kan være nyttig.
+*/
+function addedToday($time){
+	$day = substr($time, 8, 2);
+	$month = substr($time, 5, 2);
+	$year = substr($time, 0, 4);
+	$cur_day = date('d');
+	$cur_month = date('m');
+	$cur_year = date('Y');
+	
+	return(	($day == $cur_day) &&
+		($month == $cur_month) &&
+		($year == $cur_year));
+}
+
+/*
+"createTable" printer ut en tabell over data fra taellen $boatname i databasen.
+Den benytter table.css (design av tabell).
+Her er det mange muligheter for å begrense utskriften ved kall til andre funksjoner.
+Brukes ikke i mainExample.php men kan være nyttig.
+*/
+function createTable($conn, $boatname,$timeRange,$column){
+	$sql = "SELECT $column,pumpe,servertime FROM $boatname WHERE servertime BETWEEN '$timeRange[0]' AND '$timeRange[1]'";
+	$result = $conn->query($sql);
+
+	echo "	<table class='gridtable'>
+		<tr><th>Måletidspunkt</th><th>Vannhøyde i kjølen [cm]</th>
+		<th>Status lensepumpe</th></tr>";
+	//echo "$result";
+	if($result->num_rows > 0){
+		while($row = $result->fetch_assoc()){
+			
+			//Eksempel på begrenset utskrift:
+			//$print = addedToday($row['time']);
+			//if($print){
+			
+			if($row['pumpe']){
+				$pumpstatus = "Aktiv";
+			}else{
+				$pumpstatus = "Ikke aktiv";
+			}	
+		
+			echo "	<tr><td>{$row['servertime']}</td>
+				<td>{$row["$column"]}</td><td>$pumpstatus</td></tr>";
+			//}
+		}
+	}
+
+	echo "	</table>";
+}
+
+/*
+"createLastMeasure" er et "spesialtilfelle" av "createTable" som printer ut en tabell med data kun fra siste måling i tabellen $boatname.
+*/
+function createLastMeasure($conn, $boatname){
+	//henter ut kun siste måling
+	$sql_lm = "SELECT id, servertime, status, temperatur, vind, vannhoyde, pumpe, krengningX, krengningY, landstrom, snolast FROM $boatname ORDER BY id DESC LIMIT 1";
+	$result = $conn->query($sql_lm);
+	$row = $result->fetch_assoc();
+
+	$pumpe = 'Aktiv';
+	if($row['pumpe'] == 0){ $pumpe = 'Ikke aktiv'; }
+
+	$landstrom = 'På';
+	if($row['landstrom'] == 0){ $landstrom = 'Av'; }
+
+	echo "	<table class='gridtable'>
+		<tr><th>Måletidspunkt</th><th>Temp</th><th>Vind</th><th>Vannhøyde</th><th>Krengning</th><th>Lensepumpe</th><th>Landstrøm</th><th>Snølast</th></tr>
+	
+		<tr><td>{$row['servertime']}</td><td>{$row['temperatur']}</td><td>{$row['vind']}</td><td>{$row['vannhoyde']}</td>
+		<td>X: {$row['krengningX']}  Y: {$row['krengningY']}</td><td>$pumpe</td><td>$landstrom</td><td>{$row['snolast']}</td></tr>
+		</table>";
+}
+
+/*
+"getLastStatus" henter ut siste variabel av typen status i tabellen $boatname og returnerer
+denne, som riktig farge på status-lyset. 0 = green, 1 = yellow, 2 = red.
+*/
+function getLastStatus($conn, $boatname){
+	$sql_lm = "SELECT id, status FROM $boatname ORDER BY id DESC LIMIT 1";
+	$result = $conn->query($sql_lm);
+	$row = $result->fetch_assoc();
+
+	$status = 'green';
+	if($row['status'] == 1){ $status = 'yellow'; }
+	if($row['status'] == 2){ $status = 'red'; }
+
+	return $status;
+
+}
+
+/*
+"getTimeRange" henter inn data fra de to innputfeltene og returnerer en array med start og slutt tiden.
+*/
+function getTimeRange(){
+	$timeRange = array();
+	if(isset($_POST['SubmitButton'])){
+		$from = $_POST['from'];
+		$to = $_POST['to'];
+	array_push($timeRange,$from);
+	array_push($timeRange,$to);
+	return $timeRange;
+	}
+}
+
+/*
+"printGraph" tegner en graf til skjerm.
+Oversikt over innparametre:
+
+$conn er tilkoblingen til databasen.
+
+$boatname er navnet på den tabellen i databasen vi er ute etter.
+
+$filename er navnet på filen hvor bildet blir lagret. Det må være unikt for hver graf. $filename blir også overskriften i grafen. 
+Eksempel på $filename er "Temperatur" (du trenger ikke legge til .html/.php/.jpeg eller no slikt).
+
+$timeRange er en array hvor første og siste verdi henholdsvis indikerer første og siste tid (eller datetime) som blir med i grafen. 
+$timeRange oppdateres når brukeren skriver inn ønsket tidsperiode under valg av tidsintervall.
+
+$column er hva slags måling du ønsker å lage en graf over. 
+F.eks 'temperatur' hvis du har en kolonne i tabellen som heter 'temperatur' som inneholder temperaturdata.
+
+$graphtype er hva slags graf man ønsker å lage. 
+Her er det to valg fra før ('static' og 'dynamic'), og man kan lage flere selv om man setter seg inn i jqGraph og "generateGraph"-funksjonen.
+*/
+function printGraph($conn, $boatname, $filename, $timeRange, $column, $graphtype){	
+	$sql = "SELECT $column,servertime FROM $boatname WHERE $column IS NOT NULL AND servertime BETWEEN '$timeRange[0]' AND '$timeRange[1]'";
+	$result = $conn->query($sql);
+	$time =array();
+	$yval =array();
+	if($result->num_rows > 0){
+	while($row=$result->fetch_assoc()){
+		array_push($time,$row["servertime"]);
+		array_push($yval,$row["$column"]);
+		}
+		switch($graphtype){
+			case('static'):
+			generateGraphStatic($time, $yval, $filename);
+			break;
+			
+			case('dynamic'):
+			generateGraphDynamic($time, $yval, $filename);
+			break;
+		}
+	}	
+}
+
+/*
+"get_X_days_ago" returnerer dato og tid (datetime "yyyy-mm-dd hh:mm:ss") $X dager siden.
+Denne er ikke helt presis i månedskifter.
+*/
+function get_X_days_ago($X){
+	$year = date('Y'); $month = date('m'); $day = date('d'); $h = date('H'); $m = date('i'); $s = date('s');
+	$day = $day - $X;
+	if($day > 0){ 
+		if($day < 10){ $day = "0$day"; }
+		return "$year-$month-$day $h:$m:$s";
+	}
+	if(--$month > 0){
+		if($month < 10){ $month = "0$month"; }
+		if($month == 2){
+			$day = 28+$day;
+		}else{
+			$day = 30+$day;
+		}
+		return "$year-$month-$day $h:$m:$s";
+	}
+	--$year;
+	$day = 30+$day;
+	return "$year-12-$day $h:$m:$s";
+	
+}
+
+?>

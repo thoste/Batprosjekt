@@ -1,0 +1,137 @@
+body{ 
+	color:#404040;
+	font:1.2em/1.4em 'Myriad Pro', Helvetica, Arial, sans-serif;
+	text-align:left;	
+	margin:0px;
+	background:#FAFAFA;
+		
+}
+
+.furthest-back{
+	background:linear-gradient(#3A66A7, #42526C);
+	height:100%;
+	width:100%;
+}
+
+.header-cont{
+	width:100%; 
+	position:fixed;
+	top:0px;
+}
+
+.header{
+	height:50px;
+	background:#F0F0F0;
+	border:1px solid #6F7285;
+	width:1350px;
+	margin:0px auto;
+	line-height:13px;	
+}
+
+.content{
+	width:1350px;
+	background:#F0F0F0;
+	border:1px solid #6F7285;
+	border-top:0px;
+	margin:70px auto;
+	padding-bottom:50px;
+}
+
+.content-header{
+	color:#404040;
+	font-size:150%;
+	background-color:#A9ACB6;
+	text-align:center;
+	padding-top:6px;
+	padding-bottom:5px;
+	font-weight:bold;
+	border-top:1px solid #6F7285;
+	border-bottom:1px solid #6F7285;
+}
+
+.content-text{
+	padding-left:40px;
+	padding-top:30px;
+	padding-bottom:10px;
+}
+
+
+.graph{
+	text-align:center;
+	margin:30px auto;
+}
+
+.nav{
+	list-style-type:none;
+	
+}
+
+.nav li{
+	margin-right:30px;
+	float:left;
+}
+
+.nav li a{
+	color:#6F7285;
+	font-weight:bold;
+	text-decoration:none;	
+}
+
+.logout{
+	list-style-type:none;
+}
+
+.logout li{
+	margin-right:30px;
+	float:right;
+}
+
+.logout li a{
+	color:#6F7285;
+	font-weight:bold;
+	text-decoration:none;	
+}
+
+.logout li a:hover{
+	color:#404040;
+}
+
+.nav li a:hover{
+	color:#404040;
+}
+
+.footer{ 
+	width:55%;
+	color:#000;
+	bottom:10px;
+}
+
+.led{
+	margin:15px auto;
+	width:20px;
+	height:20px;
+	border-radius:50%;
+	background-color:rgba(255, 255, 255, 0.25);
+	box-shadow: #000 0 -1px 12px 1px;
+}
+
+.led-red{
+	background-color:#F00;
+	box-shadow: #000 0 -1px 12px 1px, inset #600 0 -1px 8px, #F00 0 2px 17px;
+}
+
+.led-yellow{
+	background-color:#FF0;
+	box-shadow: #000 0 -1px 12px 1px, inset #460 0 -1px 8px, #FF0 0 2px 17px;
+}
+
+.led-green{
+	background-color:#80FF00;
+	box-shadow: #000 0 -1px 12px 1px, inset #460 0 -1px 8px, #80FF00 0 2px 17px;
+}
+
+
+#temp{} #vann{} #pumpe{} #krengning{} #vind{} #alarm{} #status{} #landstrøm{} #snølast{}
+
+.error{ color:#CC1122 }; 
+
