@@ -10,5 +10,6 @@ void setup(){
 }
 
 void loop(){
-	Serial.print(smokeAlarmState);
+	Serial.println(smokeAlarmState);
+	delay(100);
 }
