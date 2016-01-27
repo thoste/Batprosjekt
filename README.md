@@ -1,2 +1,2 @@
 # Batprosjekt
-Båtprosjektet Elsys
+Båtprosjektet for gruppe 4 på Elsys
