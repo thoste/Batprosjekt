@@ -1,19 +1,14 @@
-void smokeDetector(){
-	// Declare at the beginning of the main program: 
-	//
-	// const int  smokeDetectorPin = 2;
-	// int smokeDetectorCounter = 0;   
-	// int smokeDetectorState = 0;   
-	// int lastSmokeDetectorState = 0; 
-
-
+void smokeDetector(int pin){
 	// Declare in the void setup():
 	//
 	// pinMode(smokeDetectorPin, INPUT);
 	// Serial.begin(57600);
 
+	// int smokeDetectorCounter = 0;   
+	// int smokeDetectorState = 0;   
+	// int lastSmokeDetectorState = 0; 
 
-	smokeDetectorState = digitalRead(smokeDetectorPin);
+	smokeDetectorState = digitalRead(pin);
 	if (smokeDetectorState != lastSmokeDetectorState) {
     	if (smokeDetectorState == HIGH) {
     		smokeDetectorCounter++;

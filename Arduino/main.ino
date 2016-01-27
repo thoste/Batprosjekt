@@ -1,16 +1,14 @@
 // The main program 
 
-
-const int  smokeDetectorPin = 2;
-int smokeDetectorCounter = 0;   
-int smokeDetectorState = 0;   
-int lastSmokeDetectorState = 0; 
+const int smokeDetectorPin = 2;
+bool smokeAlarmState = false;
 
 void setup(){
 	pinMode(smokeDetectorPin, INPUT);
+	smokeDetectorInterrupt(smokeDetectorPin);
 	Serial.begin(57600);
 }
 
 void loop(){
-	smokeDetector();
+	Serial.print(smokeAlarmState);
 }
