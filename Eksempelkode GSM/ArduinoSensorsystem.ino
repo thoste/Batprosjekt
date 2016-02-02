@@ -29,7 +29,7 @@ IMEI = International Mobile Equipment Identity (identity of the modem) (15 digit
 /*INITIATIONS*/
 /*************/
 //MODEM
-long pincode = 8405;                          //The PIN code of the SIM card inserted in the modem.
+long pincode = 0000;                          //The PIN code of the SIM card inserted in the modem.
 byte* IMEI_nr = {};                           //Array that holds the IMEI number of the modem.
 
 //TIMESTAMP
