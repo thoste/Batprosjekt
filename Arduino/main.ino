@@ -2,6 +2,7 @@
 
 const int smokeDetectorPin = 2;
 volatile bool smokeAlarmState = false;
+int smokeCounter = 0;
 
 void setup(){
 	pinMode(smokeDetectorPin, INPUT);
@@ -11,5 +12,8 @@ void setup(){
 
 void loop(){
 	Serial.println(smokeAlarmState);
-	delay(100);
+	if(smokeAlarmState == true){
+		smokeAlarmOff();
+	}
+	delay(1000);
 }
