@@ -17,7 +17,7 @@ void setup(){
 	Serial.begin(9600);
 
 	// Serial for modem
-	Serial3.begin(4800);
+	modemSetup();
 
 	// Firealarm pin interrupt
 	pinMode(smokeDetectorPin, INPUT);
