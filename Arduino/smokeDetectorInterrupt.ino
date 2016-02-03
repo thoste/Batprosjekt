@@ -1,21 +1,15 @@
 void smokeDetectorInterrupt(int interruptPin){
+	// Use:
 	// attachInterrupt(pin,function,mode)
 	// Modes: LOW, HIGH, CHANGE, RISING, FALLING
 	attachInterrupt(digitalPinToInterrupt(interruptPin), smokeAlarm, RISING);
 }
 
 void smokeAlarm(){
-	// Declare at the beginning of main:
-	// volatile bool smokeAlarmState = false;
-	smokeAlarmState = true;
+	// Send alarm to serial monitor:
+	Serial.println("Fire alarm!");
+
+	// Send a SMS:
+	sendSMS(phoneNumber, "Brannalarm på båten!");
 }
 
-void smokeAlarmOff(){
-	if (smokeAlarmState == true){
-		smokeCounter += 1;
-		if(smokeCounter == 10){
-			smokeCounter = 0;
-			smokeAlarmState = false;
-		}
-	}
-}
