@@ -6,10 +6,10 @@ void smokeDetectorInterrupt(int interruptPin){
 }
 
 void smokeAlarm(){
-	// Send alarm to serial monitor:
+	// Send alarm to serial monitor for debugging:
 	Serial.println("Fire alarm!");
 
-	// Send a SMS:
-	sendSMS(phoneNumber, "Brannalarm på båten!");
+	// Send a SMS to boatowner:
+	sendSMS(phoneNumber, "Brannalarm på båten! - Båtvakten");
 }
 

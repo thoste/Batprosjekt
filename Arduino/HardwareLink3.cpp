@@ -1,4 +1,4 @@
-#include <HardwareLink3.h>
+#include "HardwareLink3.h"
 
 
 //Checks if input str ends with 'OK(submit)(newline)'. ASCII value 13 = submit. ASCII value 10 = newline.
