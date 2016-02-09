@@ -1,15 +1,32 @@
 #include <Arduino.h>
 #include "Time.h"
 #include "HardwareLink3.h"
+#include "OneWire.h"
+#include "DallasTemperature.h"
+
+// Data wire is plugged into pin 2 on the Arduino
+#define ONE_WIRE_BUS_1 2
+
+// Setup a oneWire instance to communicate with any OneWire devices 
+// (not just Maxim/Dallas temperature ICs)
+OneWire Bus1(ONE_WIRE_BUS_1);
+
+// Pass our oneWire reference to Dallas Temperature.
+DallasTemperature sensors(&Bus1);
+double temp1;
+double temp2;
+double tempM;
 
 
 // Phone number of the boat owner
 char* phoneNumber = "95174794";
 
-// Smoke detetctor pin
-// digital pins usable one Arduino Mega for interrupt: 2, 3, 18, 19, 20, 21
-const int smokeDetectorPin = 2;
-const int smokeDetectorPin2 = 2;
+
+// digital pins usable one Arduino Mega for interrupt: 2, 3, 18, 19
+const int waterDetectorPin = 3;
+const int smokeDetectorPin = 18;
+const int smokeDetectorPin2 = 19;
+
 
 
 // //MODEM
@@ -36,19 +53,28 @@ const int smokeDetectorPin2 = 2;
 // char ping_adr[32] = "www.google.com";         //The address we wish to ping.
 
 
+
 void setup(){
 	// Serial for debugging
 	Serial.begin(9600);
 
 	// Serial for modem
-	Serial3.begin(4600);
+	//Serial3.begin(4600);
+
+	// Wateralarm pin interrupt
+	pinMode(waterDetectorPin, INPUT);
+	waterDetector(waterDetectorPin);
 
 	// Firealarm pin interrupt
 	pinMode(smokeDetectorPin, INPUT);
-	smokeDetectorInterrupt(smokeDetectorPin);
+	smokeDetector(smokeDetectorPin);
 	pinMode(smokeDetectorPin2, INPUT);
-	smokeDetectorInterrupt(smokeDetectorPin2);
+	smokeDetector(smokeDetectorPin2);
+
+	// Temp sensors
+	sensors.begin();
 }
 
 void loop(){
+	tempSensors();
 }
