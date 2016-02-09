@@ -5,7 +5,7 @@ void waterAlarm(){
 		if (n == 5){
 			waterCounter += 1;
 			Serial.println("Water!");
-			if(waterCounter == 3 && waterSensorAlarm != true){
+			if(waterCounter >= 3 && waterSensorAlarm != true){
 				waterSensorAlarm = true;
 				Serial.println("WAAAATHAAA!");
 				// Send SMS
@@ -22,6 +22,7 @@ void timeCounterWater(){
 		if(timeCounterWaterAlarm >= 10000){
 			// Reset the waterAlarm after some time
 			waterSensorAlarm = false;
+			waterCounter = 0;
 		}
 	}
 }
