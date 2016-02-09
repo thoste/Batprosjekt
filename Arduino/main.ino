@@ -63,18 +63,30 @@ void setup(){
 
 	// Wateralarm pin interrupt
 	pinMode(waterDetectorPin, INPUT);
-	waterDetector(waterDetectorPin);
+	//waterDetector(waterDetectorPin);
 
 	// Firealarm pin interrupt
-	pinMode(smokeDetectorPin, INPUT);
-	smokeDetector(smokeDetectorPin);
-	pinMode(smokeDetectorPin2, INPUT);
-	smokeDetector(smokeDetectorPin2);
+	// pinMode(smokeDetectorPin, INPUT);
+	// smokeDetector(smokeDetectorPin);
+	// pinMode(smokeDetectorPin2, INPUT);
+	// smokeDetector(smokeDetectorPin2);
 
 	// Temp sensors
 	sensors.begin();
 }
 
+bool waterSensorAlarm = false;
+long timeCounterWaterAlarm = 0;
+int n = 0;
+int waterCounter = 0;
+
+
 void loop(){
 	tempSensors();
+	waterAlarm();
+	timeCounterWater();
+	n = 0;
 }
+
+
+
