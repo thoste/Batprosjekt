@@ -1,6 +1,10 @@
 // Phone number of the boat owner
 char* phoneNumber = "95174794";
 
+// Time variables
+unsigned long unix_time_ts_sync = 0;
+unsigned long millis_at_ts_sync = 0;
+
 // Temperature sensors
 double temp1;
 double temp2;
@@ -9,7 +13,11 @@ double tempM;
 // Water Alarm
 bool waterAlarmState = false;
 int counterWaterAlarm = 0;
-long timeCounterWaterAlarm = 0;
+int minuteWaterAlarmStart = 0;
+int minuteWaterAlarmStopp = 0;
+int minutesSinceWaterAlarm = 0;
+int tmpA = 0;
+int tmpB = 0;
 
 
 
