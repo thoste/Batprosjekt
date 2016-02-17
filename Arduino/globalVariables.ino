@@ -10,7 +10,7 @@ double temp1;
 double temp2;
 double tempM;
 
-// Water Alarm
+// Water alarm
 bool waterAlarmState = false;
 int counterWaterAlarm = 0;
 int minuteWaterAlarmStart = 0;
@@ -19,7 +19,10 @@ int minutesSinceWaterAlarm = 0;
 int tmpA = 0;
 int tmpB = 0;
 
-
+// Fire alarm
+bool fireAlarmState = false;
+bool sendtFireAlarmSMS = false;
+int minuteFireAlarmSMSsendt = 0;
 
 
 

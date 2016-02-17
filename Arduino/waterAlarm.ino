@@ -14,24 +14,12 @@ void waterAlarm(){
 			minuteWaterAlarmStart = minute();
 			minuteWaterAlarmStopp = minuteWaterAlarmStart + 1;
 			minutesSinceWaterAlarm = minuteWaterAlarmStart;
-			tmpA = minuteWaterAlarmStart;
+			tempWaterA = minuteWaterAlarmStart;
 			break;
 		}
 	}
 	if(waterAlarmState == true){
 		timeCounterWater();
-	}
-	
+	}	
 }
 
-void timeCounterWater(){
-	if(minutesSinceWaterAlarm >= minuteWaterAlarmStopp){	
-		waterAlarmState = false;
-		Serial.println("Water alarm reset");
-	}
-	tmpB = minute();
-	if(tmpA != tmpB){
-		minutesSinceWaterAlarm++;
-		tmpA = minute();
-	}
-}

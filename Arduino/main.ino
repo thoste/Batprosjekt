@@ -54,6 +54,7 @@ void setup(){
 void loop(){
 	//tempSensors();
 	waterAlarm();
+	fireAlarm();
 	//counterWaterAlarm = 0;
 	//delay(2000);
 	printDate();
