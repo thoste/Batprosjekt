@@ -6,7 +6,7 @@ void timeCounterWater(){
 	tempWaterB = minute();
 	if(tempWaterA != tempWaterB){
 		minutesSinceWaterAlarm++;
-		tempA = minute();
+		tempWaterA = minute();
 	}
 }
 

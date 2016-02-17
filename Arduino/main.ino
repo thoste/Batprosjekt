@@ -4,6 +4,7 @@
 #include "OneWire.h"
 #include "DallasTemperature.h"
 
+
 // Data wire is plugged into pin 2 on the Arduino
 #define ONE_WIRE_BUS_1 2
 // Setup a oneWire instance to communicate with any OneWire devices 
@@ -38,6 +39,8 @@ void setup(){
 
 	// Wateralarm pin interrupt
 	pinMode(waterDetectorPin, INPUT);
+	pinMode(smokeDetectorPin, INPUT);
+	pinMode(smokeDetectorPin2, INPUT);
 	//waterDetector(waterDetectorPin);
 
 	// Firealarm pin interrupt
