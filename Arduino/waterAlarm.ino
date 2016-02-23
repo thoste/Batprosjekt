@@ -14,7 +14,7 @@ void waterAlarm(){
 			minuteWaterAlarmStart = minute();
 			minuteWaterAlarmStopp = minuteWaterAlarmStart + 1;
 			minutesSinceWaterAlarm = minuteWaterAlarmStart;
-			tempWaterA = minuteWaterAlarmStart;
+			tmp_WaterA = minuteWaterAlarmStart;
 			break;
 		}
 	}

@@ -3,10 +3,10 @@ void timeCounterWater(){
 		waterAlarmState = false;
 		Serial.println("Water alarm reset");
 	}
-	tempWaterB = minute();
-	if(tempWaterA != tempWaterB){
+	tmp_WaterB = minute();
+	if(tmp_WaterA != tmp_WaterB){
 		minutesSinceWaterAlarm++;
-		tempWaterA = minute();
+		tmp_WaterA = minute();
 	}
 }
 
@@ -15,9 +15,9 @@ void timeCounterFire(){
 		fireAlarmState = false;
 		Serial.println("Fire alarm reset");
 	}
-	tempFireB = minute();
-	if(tempFireA != tempFireB){
+	tmp_FireB = minute();
+	if(tmp_FireA != tmp_FireB){
 		minutesSinceFireAlarm++;
-		tempFireA = minute();
+		tmp_FireA = minute();
 	}
 }

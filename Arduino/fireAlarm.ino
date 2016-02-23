@@ -11,7 +11,7 @@ void fireAlarm(){
 			minuteFireAlarmStart = minute();
 			minuteFireAlarmStopp = minuteFireAlarmStart + 1;
 			minutesSinceFireAlarm = minuteFireAlarmStart;
-			tempFireA = minuteFireAlarmStart;
+			tmp_FireA = minuteFireAlarmStart;
 			break;
 		}
 	}

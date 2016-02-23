@@ -16,8 +16,8 @@ int counterWaterAlarm = 0;
 int minuteWaterAlarmStart = 0;
 int minuteWaterAlarmStopp = 0;
 int minutesSinceWaterAlarm = 0;
-int tempWaterA = 0;
-int tempWaterB = 0;
+int tmp_WaterA = 0;
+int tmp_WaterB = 0;
 
 // Fire alarm
 bool fireAlarmState = false;
@@ -25,8 +25,8 @@ bool sendtFireAlarmSMS = false;
 int minuteFireAlarmStart = 0;
 int minuteFireAlarmStopp = 0;
 int minutesSinceFireAlarm = 0;
-int tempFireA = 0;
-int tempFireB = 0;
+int tmp_FireA = 0;
+int tmp_FireB = 0;
 
 
 
