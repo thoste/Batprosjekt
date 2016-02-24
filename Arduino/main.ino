@@ -27,15 +27,6 @@ void setup(){
 
 	// Serial for modem
 	//Serial3.begin(4600);
-
-	// // Set up Unix time sync
-	// unix_time_ts_sync = get_unix_ts();
-	// millis_at_ts_sync = millis();
-	// Serial.print("Time sync: ");
- 	//	Serial.println(unix_time_ts_sync);
-
- 	// hr, min, sec, day, month, year
- 	setTime(15,35,00,10,2,2016);
 	
 
 	// Wateralarm pin interrupt

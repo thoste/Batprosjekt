@@ -1,10 +1,11 @@
+//Modem
 void modemSetup(){
-  //Modem setup
   Serial3.begin(4800);                            //We use Serial3 for communication with the modem.
 
   Serial.println(F("Modem booting"));
-  modemStart(pincode);                            //Boots the modem and enters the pin code.
-  Serial.println(F("Modem boot completed"));
+  delay(5000); 
+  //modemStart(pincode);    // Boot modem and enter PIN
+                         
   Serial.println(F("Entering modem setup"));
   if(GPRS_setup()){                               //Configures the modem so that it is able to send data and SMS.
     Serial.println(F("Modem setup completed"));   
@@ -47,5 +48,9 @@ void modemSetup(){
     Serial.print("ERROR: Could not ping ");
     Serial.println(ping_adr);
   }
-}
+  Serial.println(F("Modem boot completed"));
 
+  //Resetting time intervals
+  millis_now = millis();
+  millis_at_last_send = millis_now;
+}

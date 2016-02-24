@@ -29,7 +29,7 @@ IMEI = International Mobile Equipment Identity (identity of the modem) (15 digit
 /*INITIATIONS*/
 /*************/
 //MODEM
-long pincode = 0000;                          //The PIN code of the SIM card inserted in the modem.
+long pincode = 4456;                          //The PIN code of the SIM card inserted in the modem.
 byte* IMEI_nr = {};                           //Array that holds the IMEI number of the modem.
 
 //TIMESTAMP
@@ -99,7 +99,9 @@ void setup() {
   Serial3.begin(4800);                            //We use Serial3 for communication with the modem.
 
   Serial.println(F("Modem booting"));
-  modemStart(pincode);                            //Boots the modem and enters the pin code.
+  delay(5000); 
+  //modemStart(pincode);    // Boot modem and enter PIN
+                         
   Serial.println(F("Modem boot completed"));
   Serial.println(F("Entering modem setup"));
   if(GPRS_setup()){                               //Configures the modem so that it is able to send data and SMS.
@@ -261,7 +263,7 @@ void loop() {
     //We send a warning on sms if the pump stops and we have not sent a warning already.
     if(pump_samples[pump_counter-1] == 0 && pump_alert == 0){
       Serial.println("The bilgepump is currently inactive, and we send this (unimportant) information to the owner via SMS");
-      sendSMS("98480712", "Lensepumpen er ikke aktiv for øyeblikket. Hilsen Båtvakten");
+      sendSMS("93266881", "Lensepumpen er ikke aktiv for øyeblikket. Hilsen Båtvakten");
       pump_alert = true;
     }
 
@@ -313,7 +315,6 @@ void loop() {
       Serial.println("Did not sync time successfully!");
     }
   }
-
   
 }//end of loop()
 
