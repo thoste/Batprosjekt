@@ -2,6 +2,7 @@
 #include "Time.h"
 #include "HardwareLink3.h"
 
+
 void setup(){
   // Serial used for debugging
   Serial.begin(9600);
@@ -10,5 +11,7 @@ void setup(){
 }
 
 void loop(){
-  millis_now = millis();
+	Serial.print("Signal strenght: ");
+	Serial.println(getSignalStrength());
+	delay(1000);
 }
