@@ -66,13 +66,24 @@ bool cmdError(char* str){
 
 
 //Writes pin code to modem, and waits until modem is finished booting.
-void modemStart(long int pin){
+void modemStart(){
 	char str[128] = ""; 	//String to gather answer from modem.
 	
 	pinMode(8, OUTPUT);		//Pin 8 is PWRKEY pin on the GSM-shield.
     pinMode(9, OUTPUT);		//Pin 9 is RESTART pin on the GSM-shield.
     digitalWrite(9, LOW);	//Setting both to low.
     digitalWrite(8, LOW);	
+    delay(5000);
+    digitalWrite(8, HIGH); // Power GSM shield
+    delay(1000);
+    digitalWrite(8, LOW);
+    Serial.println("Power GSM shield");
+    delay(5000);
+    digitalWrite(9, HIGH);	// Reset GSM shiled
+    delay(1000);
+    digitalWrite(9, LOW);	
+    Serial.println("Reset GSM shield");
+    delay(5000);
 	
 	long loopcounter = 0;
 	
@@ -80,12 +91,10 @@ void modemStart(long int pin){
 		while(Serial3.available()){
 			cstringAppend(str, (char)Serial3.read());
 		}
-		
 		if(loopcounter > 5000){			//If enough time has passed, we presume the modem is off.
 			digitalWrite(8, HIGH);		//We boot the modem.
 			delay(1000);
 			digitalWrite(8, LOW);
-			
 			loopcounter = 0;
 			
 			str[0] = '\0';
@@ -93,28 +102,28 @@ void modemStart(long int pin){
 		
 		delay(1);
 		loopcounter++;
-		
 	}
 	str[0] = '\0';
-	
+	loopcounter = 0;
 	flushReg();
-	Serial3.print("AT+CPIN="); 		//Writes pin code to modem.
-	Serial3.print(pin);
 	submit(0);
-	
 	while(!bootFinished(str)){		//Waits until boot is finished.
 		if(Serial3.available()){
 			cstringAppend(str, (char)Serial3.read());
 		}
+		if(loopcounter > 30000){			//If enough time has passed, the modem is stuck, we restart the booting process
+			Serial.println("Did not work.. Restarting the booting process");
+			modemStart();
+		}
+		delay(1);
+		loopcounter++;
 	}
-	
 	return;
 }
 
 //Run this in setup() to configure GPRS communication.
 bool GPRS_setup(){
 	char str[128] = "";
-	
 	
 	flushReg();
 	Serial3.print(F("AT+CLTS=1"));		//Enable time update
@@ -126,8 +135,6 @@ bool GPRS_setup(){
 	}
 	str[0] = '\0';	
 	
-	
-	
 	flushReg();
 	Serial3.print(F("AT+CGATT=1"));		//Attach to GPRS service
 	submit(0);
@@ -137,7 +144,6 @@ bool GPRS_setup(){
 		}
 	}
 	str[0] = '\0';
-	
 	flushReg();
 	Serial3.print(F("AT+CIPMUX=0"));	//Configure single-IP connection
 	submit(0);
@@ -147,13 +153,11 @@ bool GPRS_setup(){
 		}
 	}
 	str[0] = '\0';
-	
 	flushReg();	
 	Serial3.print(F("AT+CSTT=\"telenor\",\"dj\",\"dj\"")); 	//Start task, set APN, username and password
 	
 	//With some telecom operators it may take some time to get a valid IP address.
 	//If an invalid IP address is assigned, add a delay here.
-	
 	submit(0);
 	while(!cmdOK(str)){
 		if(Serial3.available()){
