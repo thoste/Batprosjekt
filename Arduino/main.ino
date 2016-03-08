@@ -36,6 +36,7 @@ char ping_adr[32] = "www.google.com";         //The address we wish to ping.
 int iTemp = 0;
 double temps1[11];
 double temps2[11];
+double temps3[11];
 
 // digital pins usable one Arduino Mega for interrupt: 2, 3, 18, 19
 const int waterDetectorPin = 3;
@@ -59,7 +60,7 @@ int minuteWaterAlarmStopp = 0;
 int minutesSinceWaterAlarm = 0;
 int tmp_WaterA = 0;
 int tmp_WaterB = 0;
-
+//test
 
 void setup(){
     // Serial used for debugging
@@ -200,10 +201,12 @@ void tempSensors(){
 	sensors.requestTemperatures();
     temps1[iTemp] = sensors.getTempCByIndex(0);
     temps2[iTemp] = sensors.getTempCByIndex(1);
+	temps3[iTemp] = sensors.getTempCByIndex(2);
     iTemp++;
     if (iTemp == 11){
         Serial.println(middle(temps1, 11));
         Serial.println(middle(temps2, 11));
+		Serial.println(middle(temps3, 11));
         iTemp = 0;
     }
 }
