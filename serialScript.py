@@ -1,7 +1,7 @@
 import time
 import serial as ser
 
-com = ser.Serial('/dev/cu.usbserial-A9M5LZZ7', baudrate=9600)
+com = ser.Serial('/dev/cu.usbserial', baudrate=4800)
 
 com.isOpen()
 

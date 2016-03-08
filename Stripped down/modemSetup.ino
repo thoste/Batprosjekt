@@ -2,7 +2,7 @@ void modemSetup(){
   Serial3.begin(4800);                            //We use Serial3 for communication with the modem.
 
   Serial.println(F("Modem booting"));
-  delay(2000); 
+  delay(5000); 
 
   //modemStart(pincode);    // Boot modem and enter PIN
                          

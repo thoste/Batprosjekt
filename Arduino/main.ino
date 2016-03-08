@@ -121,6 +121,7 @@ void setup(){
 }
 
 void loop(){
+    Serial.println(minute());
 	tempSensors();
     waterAlarm();
     fireAlarm();

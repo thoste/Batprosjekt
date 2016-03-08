@@ -113,6 +113,13 @@ void modemStart(){
 		}
 		if(loopcounter > 30000){			//If enough time has passed, the modem is stuck, we restart the booting process
 			Serial.println("Did not work.. Restarting the booting process");
+			digitalWrite(8, HIGH); // Power GSM shield
+    		delay(1000);
+    		digitalWrite(8, LOW);
+    		delay(5000);
+    		digitalWrite(9, HIGH);	// Reset GSM shiled
+    		delay(1000);
+    		digitalWrite(9, LOW);
 			modemStart();
 		}
 		delay(1);
