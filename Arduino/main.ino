@@ -122,10 +122,16 @@ void setup(){
 }
 
 void loop(){
+    Serial.print("ts_synced. ");
+    Serial.println(ts_synced);
+    Serial.print("Minute: ");
     Serial.println(minute());
-	tempSensors();
-    waterAlarm();
-    fireAlarm();
+    Serial.print("From GSM: ");
+    Serial.println(Serial3.print(F("AT+CNTP")));
+
+	// tempSensors();
+ //    waterAlarm();
+ //    fireAlarm();
 	delay(1000);
 }
 

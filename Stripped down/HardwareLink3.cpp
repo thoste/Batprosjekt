@@ -98,8 +98,8 @@ void modemStart(long int pin){
 	str[0] = '\0';
 	
 	flushReg();
-	Serial3.print("AT+CPIN="); 		//Writes pin code to modem.
-	Serial3.print(pin);
+	// Serial3.print("AT+CPIN="); 		//Writes pin code to modem.
+	// Serial3.print(pin);
 	submit(0);
 	
 	while(!bootFinished(str)){		//Waits until boot is finished.
