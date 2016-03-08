@@ -14,7 +14,7 @@
 
 
  //GPRS / GSM communication
-  void modemStart(long int pin);		//Writes pin code to modem.
+  void modemStart();		//Writes pin code to modem.
   bool GPRS_setup();					//Writes AT commands needed to configure GPRS.
   
   bool sendSMS(char* num, char* msg);		//Sends msg as SMS to num.
