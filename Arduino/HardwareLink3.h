@@ -36,3 +36,6 @@
   
   //SUBMIT
   void submit(uint16_t time);				//Submits (writes ASCII values 13 and 10) and delays 'time' milliseconds.
+
+  bool waitForOk(const char* command);
+  void print3(const char* str);

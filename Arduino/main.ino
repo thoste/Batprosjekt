@@ -10,6 +10,7 @@ DallasTemperature sensors(&Bus);
 
 // Phone number of the boat owner
 char* phoneNumber = "93266881";
+unsigned long timetime = 0;
 
 //MODEM
 byte* IMEI_nr = {};                           //Array that holds the IMEI number of the modem.
@@ -77,6 +78,8 @@ void setup(){
     }
     else{
         Serial.println(F("Modem setup failed"));
+        Serial.println(F("Restarting the Arduino"));
+        // Restart Arduino
     }
     ip_adr = get_IP();                              //Holding the IP address given to us by the telecom operator.
     Serial.print("IP address: ");
@@ -92,6 +95,7 @@ void setup(){
     Serial.println(" ");
     //Time sync
     ts_synced = get_unix_ts();                      //Synchronizing time
+    setTime(ts_synced);                             //Sets local Arduino time to the server time
     millis_at_ts_sync = millis();                   //Saving millis() at time of synchronization
     Serial.print("Time sync: ");
     Serial.println(ts_synced);
@@ -122,17 +126,18 @@ void setup(){
 }
 
 void loop(){
-    Serial.print("ts_synced. ");
-    Serial.println(ts_synced);
-    Serial.print("Minute: ");
-    Serial.println(minute());
-    Serial.print("From GSM: ");
-    Serial.println(Serial3.print(F("AT+CNTP")));
+    Serial.print("Time: ");
+    Serial.print(hour());
+    Serial.print(":");
+    Serial.print(minute());
+    Serial.print(":");
+    Serial.println(second());
+
 
 	// tempSensors();
  //    waterAlarm();
  //    fireAlarm();
-	delay(1000);
+	delay(5000);
 }
 
 void fireAlarm(){
