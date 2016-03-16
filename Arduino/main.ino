@@ -35,41 +35,34 @@ char* ip_adr;                                 //C-string to hold the address we 
 char ping_adr[32] = "www.google.com";         //The address we wish to ping.
 
 //TEMP
-bool tempSampleState = true;
-int iTemp = 0;
-int jTemp = 0;
-double temps1[11];
-double temps2[11];
-double temps3[11];
-double tempStore1[3];
-double tempStore2[3];
-double tempStore3[3];
-int minuteTempSampleStart = 0;
-int minuteTempSampleStopp = 0;
-int tmpTempA = 0;
-int tmpTempB = 0;
+bool tempSampleState[3] = {1};
+int iTemp[3] = {0};
+int jTemp[3] = {0};
+double temps[3][10] = {0};
+double tempStore[3][3] = {0};
+int minuteTempSampleStart[3] = {0};
+int minuteTempSampleStopp[3] = {0};
+int tmpTempA[3] = {0};
+int tmpTempB[3] = {0};
 
-// digital pins usable one Arduino Mega for interrupt: 2, 3, 18, 19
-const int waterDetectorPin = 3;
-const int smokeDetectorPin = 18;
-const int smokeDetectorPin2 = 19;
 
 //FIRE
-bool fireAlarmState = false;
-bool sendtFireAlarmSMS = false;
-int minuteFireAlarmStart = 0;
-int minuteFireAlarmStopp = 0;
-int tmpFireA = 0;
-int tmpFireB = 0;
+const int fireAlarmPin[2] = {18,19}; //Sets the pin input on the arduino for the fire alarm pins
+bool fireAlarmState[2] = {0};          //Holds the fire alarm boolean states - default is false
+int minuteFireAlarmStart[2] = {0};
+int minuteFireAlarmStopp[2] = {0};
+int tmpFireA[2] = {0};
+int tmpFireB[2] = {0};
 
 //WATER
-bool waterAlarmState = false;
-int counterWaterAlarm = 0;
-int minuteWaterAlarmStart = 0;
-int minuteWaterAlarmStopp = 0;
-int tmpWaterA = 0;
-int tmpWaterB = 0;
-//test
+const int waterAlarmPin[6] = {1,2,3,4,5,6}; //Sets the pin input on the arduino for the water alarm pins
+bool waterAlarmState[6] = {0};          //Holds the water alarm boolean states - default is false
+int counterWaterAlarm[6] = {0};
+int minuteWaterAlarmStart[6] = {0};
+int minuteWaterAlarmStopp[6] = {0};
+int tmpWaterA[6] = {0};
+int tmpWaterB[6] = {0};
+
 
 void setup(){
     // Serial used for debugging
@@ -127,9 +120,12 @@ void setup(){
     sensors.begin();
 
     // Fire and water sensor pins
-    pinMode(waterDetectorPin, INPUT);
-    pinMode(smokeDetectorPin, INPUT);
-    pinMode(smokeDetectorPin2, INPUT);
+    pinMode(fireAlarmPin[0], INPUT);
+    pinMode(fireAlarmPin[1], INPUT);
+
+    for (int i = 0; i < 6; i++){
+        pinMode(waterAlarmPin[i], INPUT);
+    }
 
     //sendSMS(phoneNumber, "Arduinbo bootup complete!");
 }
@@ -143,53 +139,138 @@ void loop(){
     // Serial.println(second());
 
 
-	tempSensors();
- //    waterAlarm();
- //    fireAlarm();
+	temperature(0);
+    temperature(1);
+    temperature(2);
+
+    // fireAlarm(0,fireAlarmPin[0]);
+    // fireAlarm(1,fireAlarmPin[1]);
+
+    // for(int i = 0; i < 6; i++){
+    //     waterAlarm(i,waterAlarmPin[i]);
+    // }
+
+    sendDataToServer();
+
 	//delay(100);
 }
 
-void fireAlarm(){
-	while(digitalRead(smokeDetectorPin) == HIGH){
-		fireAlarmState = true;
-		Serial.println("Fire alarm!");
-		if(sendtFireAlarmSMS != true){
-			Serial.println("Sending fire alarm SMS!");
-			// Send SMS;
-            //sendSMS(phoneNumber, "Det brenner på båten!");
-			sendtFireAlarmSMS = true;
-			minuteFireAlarmStart = minute();
-            tmpFireA = minute();
-			minuteFireAlarmStopp = minuteFireAlarmStart + 1;
-			break;
-		}
+void fireAlarm(int alarmNumber, int alarmPin){
+	while(digitalRead(alarmPin) == HIGH && fireAlarmState[alarmNumber] != true){
+		Serial.print("Fire alarm for number: ");
+        Serial.println(alarmNumber);
+		sendAlarmSMS('F', alarmNumber);
+		minuteFireAlarmStart[alarmNumber] = minute();
+        tmpFireA[alarmNumber] = minute();
+		minuteFireAlarmStopp[alarmNumber] = minuteFireAlarmStart[alarmNumber] + 1;
+        fireAlarmState[alarmNumber] = true;
+		break;
 	}
-	if(fireAlarmState == true){
-		timeCounter(&minuteFireAlarmStart, minuteFireAlarmStopp, &tmpFireA, &tmpFireB, &fireAlarmState);
+	if(fireAlarmState[alarmNumber] == true){
+		timeCounter(&minuteFireAlarmStart[alarmNumber], minuteFireAlarmStopp[alarmNumber], &tmpFireA[alarmNumber], &tmpFireB[alarmNumber], &fireAlarmState[alarmNumber]);
 	}	
 }
 
-void waterAlarm(){
-	while(digitalRead(waterDetectorPin) == HIGH && waterAlarmState != true){
-		counterWaterAlarm += 1;
+void waterAlarm(int alarmNumber, int alarmPin){
+	while(digitalRead(alarmPin) == HIGH && waterAlarmState[alarmNumber] != true){
+		counterWaterAlarm[alarmNumber] += 1;
 		delay(1000);
 		// Needs to be HIGH for X seconds to raise an alarm
-		if (counterWaterAlarm == 10){
-			waterAlarmState = true;
-			Serial.println("WATER ALARM!");
-			Serial.println("Sending SMS to owner.");
-			// Send SMS
-            //sendSMS("Det er vann på båten!");
-			counterWaterAlarm = 0;
-			minuteWaterAlarmStart = minute();
-            tmpWaterA = minute();
-			minuteWaterAlarmStopp = minuteWaterAlarmStart + 1;
+		if (counterWaterAlarm[alarmNumber] == 10){
+			Serial.print("Water alarm for number: ");
+            Serial.println(alarmNumber);
+            sendAlarmSMS('W', alarmNumber);
+			counterWaterAlarm[alarmNumber] = 0;
+			minuteWaterAlarmStart[alarmNumber] = minute();
+            tmpWaterA[alarmNumber] = minute();
+			minuteWaterAlarmStopp[alarmNumber] = minuteWaterAlarmStart[alarmNumber] + 1;
+            waterAlarmState[alarmNumber] = true;
 			break;
 		}
 	}
-	if(waterAlarmState == true){
-		timeCounter(&minuteWaterAlarmStart, minuteWaterAlarmStopp, &tmpWaterA, &tmpWaterB, &waterAlarmState);
+	if(waterAlarmState[alarmNumber] == true){
+		timeCounter(&minuteWaterAlarmStart[alarmNumber], minuteWaterAlarmStopp[alarmNumber], &tmpWaterA[alarmNumber], &tmpWaterB[alarmNumber], &waterAlarmState[alarmNumber]);
 	}	
+}
+
+void temperature(int tempSensor){
+    while(tempSampleState[tempSensor] == true){
+        double tmp = 0;
+        sensors.requestTemperatures();
+        temps[tempSensor][(iTemp[tempSensor])] = sensors.getTempCByIndex(tempSensor);
+        iTemp[tempSensor]++;
+        if(iTemp[tempSensor] == 10){
+            for(int i = 0; i < iTemp[tempSensor]; i++){
+                tmp += temps[tempSensor][i];
+            }
+            tempStore[tempSensor][(jTemp[tempSensor])] = tmp/iTemp[tempSensor];
+            Serial.println("Temp store round");
+            if(jTemp[tempSensor] == 2){
+                Serial.print("Temp store done 3 times for temp sensor: ");
+                Serial.println(tempSensor);
+                if(tempSensor == 2){
+                    Serial.println("Temp store done for all, time to send data to server");
+                    timeToSendData = true;
+                }
+                jTemp[tempSensor] = 0;
+            }
+            jTemp[tempSensor]++;
+            minuteTempSampleStart[tempSensor] = minute();
+            tmpTempA[tempSensor] = minute();
+            minuteTempSampleStopp[tempSensor] = minuteTempSampleStart[tempSensor] + 1;
+            tempSampleState[tempSensor] = false;
+            tmp = 0;
+            iTemp[tempSensor] = 0;
+        }
+    }
+    if(tempSampleState[tempSensor] != true){
+            timeCounter(&minuteTempSampleStart[tempSensor], minuteTempSampleStopp[tempSensor], &tmpTempA[tempSensor], &tmpTempB[tempSensor], &tempSampleState[tempSensor]);
+        }
+}
+
+
+void sendDataToServer(){
+    if(timeToSendData == true){
+        Serial.println("Sending data to server");
+        // Send data
+        timeToSendData = false;
+    }
+}
+
+
+void sendAlarmSMS(char alarmType, int alarmNumber){
+    switch(alarmType){
+        case 'F': 
+            switch(alarmNumber){
+                case 0:
+                    Serial.println("Fire in the engine room - Sending SMS");
+                    //sendSMS(phoneNumber, "Det brenner i motorrommet på båten!");
+                    break;
+                case 1:
+                    Serial.println("Fire in the kitchen - Sending SMS");
+                    //sendSMS(phoneNumber, "Det brenner i lugaren på båten!");
+                    break;
+                default:
+                    Serial.println("Unknown fire alarm number - Did not send any SMS");
+            }
+            break;
+        case 'W':
+            switch(alarmNumber){
+                case 0:
+                    Serial.println("Water in the engine room - Sending SMS");
+                    //sendSMS(phoneNumber, "Det er vann i motorrommet på båten!");
+                    break;
+                case 1:
+                    Serial.println("Water in the lounge - Sending SMS");
+                    //sendSMS(phoneNumber, "Det er vann i salongen på båten!");
+                    break;
+                default:
+                    Serial.println("Unknown waterAlarm alarm number - Did not send any SMS");
+            }
+            break;
+        default:
+            Serial.println("Unknown alarm type - Did not send any SMS");
+    }
 }
 
 void timeCounter(int *timeStart, int timeStop, int *tmpA, int *tmpB, bool *state){
@@ -204,75 +285,8 @@ void timeCounter(int *timeStart, int timeStop, int *tmpA, int *tmpB, bool *state
     }
 }
 
-void tempSensors(){
-	sensors.requestTemperatures();
-    temps1[iTemp] = sensors.getTempCByIndex(0);
-    temps2[iTemp] = sensors.getTempCByIndex(1);
-	temps3[iTemp] = sensors.getTempCByIndex(2);
-    iTemp++;
-    if (iTemp == 11){
-  //       Serial.print("Temps: ");
-  //       Serial.print(middle(temps1, 11));
-  //       Serial.print(" : ");
-  //       Serial.print(middle(temps2, 11));
-  //       Serial.print(" : ");
-		// Serial.println(middle(temps3, 11));
-        if(tempSampleState == true){
-            Serial.println("Adding to temp store");
-            tempStore1[jTemp] = middle(temps1, 11);
-            tempStore2[jTemp] = middle(temps2, 11);
-            tempStore3[jTemp] = middle(temps3, 11);
-            Serial.print("Temps: ");
-            Serial.print(tempStore1[jTemp]);
-            Serial.print(" : ");
-            Serial.print(tempStore2[jTemp]);
-            Serial.print(" : ");
-            Serial.println(tempStore3[jTemp]);
-            if(jTemp == 2){
-                Serial.println("Temp store done");
-                timeToSendData = true;
-                jTemp = 0;
-            }
-            minuteTempSampleStart = minute();
-            tmpTempA = minute();
-            minuteTempSampleStopp = minuteTempSampleStart + 1;
-            tempSampleState = false;
-            jTemp++;
-        }
-        iTemp = 0;
-    }
-    if(tempSampleState != true){
-        timeCounter(&minuteTempSampleStart, minuteTempSampleStopp, &tmpTempA, &tmpTempB, &tempSampleState);
-    }
-}
 
-double middle(double arr[], int size) {
-    double* temp = new double[size];
-    for (int i = 0; i < size; i++) {
-        temp[i] = arr[i];
-    }
-    insSort(temp, size);
-    return temp[size / 2];
-    delete[] temp;
-}
 
-void insSort(double arr[], int size) {
-    int j, temp; 
-    for (int i = 0; i < size; i++) {
-        j = i;
-        while ((j > 0) && (arr[j] < arr[j - 1])) {
-            temp = arr[j];
-            arr[j] = arr[j - 1];
-            arr[j - 1] = temp;
-            j--;
-        }
-    }
-}
 
-void sendData(){
-    if(timeToSendData == true){
-        Serial.println("Sending data to server");
-        // Send data
-        timeToSendData = false;
-    }
-}
+
+
