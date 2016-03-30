@@ -17,20 +17,13 @@ byte* IMEI_nr = {};                           //Array that holds the IMEI number
 
 //TIMESTAMP
 unsigned long ts_synced = 0;                  //Synchronized unix time stamp.
-unsigned long millis_at_ts_sync = 0;          //millis() at the time of unix time synchronization.
-unsigned long ts_now = 0;                     //Unix time stamp right now. Calculated with ts_synced and millis().
-unsigned long millis_now = 0;                 //millis() right now.
+unsigned long ts_now = 0;
 byte ts_bytes[4] = {};                        //Array holding a time stamp (a long variable) that is cast to an array of 4 bytes.
-bool ts_is_added_this_loop = false;           //Keeps track of if time stamp is added to the current row or not.
-bool first_loop = true;                       //Is set to false at the end of the very first loop.
 
 //DATA
 bool timeToSendData = false;
-byte data[2048] = {};                         //The array of bytes we send to the server.
+byte data[64] = {};                         //The array of bytes we send to the server.
 long data_counter = 15;                       //Number of bytes in the data array. It is initialized to 15 because we already added the IMEI number digit by digit.                                         
-long data_counter_start;                      //Data counter at start of loop.
-long data_send_interval = 30000;              //The time between transfers of data to the server.
-unsigned long millis_at_last_send = 0;        //millis() at last transfer.
 char* ip_adr;                                 //C-string to hold the address we are assigned from the telecom operator.
 char ping_adr[32] = "www.google.com";         //The address we wish to ping.
 
@@ -98,7 +91,6 @@ void setup(){
     // //Time sync
     // ts_synced = get_unix_ts();                      //Synchronizing time
     // setTime(ts_synced);                             //Sets local Arduino time to the server time
-    // millis_at_ts_sync = millis();                   //Saving millis() at time of synchronization
     // Serial.print("Time sync: ");
     // Serial.println(ts_synced);
     // Serial.print("Signal strenght: ");
@@ -112,20 +104,20 @@ void setup(){
     //     Serial.print("ERROR: Could not ping ");
     //     Serial.println(ping_adr);
     // }
-    // //Resetting time intervals
-    // millis_now = millis();
-    // millis_at_last_send = millis_now;
 
     // Temp sensors begin
     sensors.begin();
 
-    // Fire and water sensor pins
+    // Fire sensor pins
     pinMode(fireAlarmPin[0], INPUT);
     pinMode(fireAlarmPin[1], INPUT);
-
-    for (int i = 0; i < 6; i++){
-        pinMode(waterAlarmPin[i], INPUT);
-    }
+    // Water sensor pins
+    pinMode(waterAlarmPin[0], INPUT);
+    pinMode(waterAlarmPin[1], INPUT);
+    pinMode(waterAlarmPin[2], INPUT);
+    pinMode(waterAlarmPin[3], INPUT);
+    pinMode(waterAlarmPin[4], INPUT);
+    pinMode(waterAlarmPin[5], INPUT);
 
     //sendSMS(phoneNumber, "Arduinbo bootup complete!");
 }
@@ -146,13 +138,15 @@ void loop(){
     // fireAlarm(0,fireAlarmPin[0]);
     // fireAlarm(1,fireAlarmPin[1]);
 
-    // for(int i = 0; i < 6; i++){
-    //     waterAlarm(i,waterAlarmPin[i]);
-    // }
+    // waterAlarm(0,waterAlarmPin[0]);
+    // waterAlarm(1,waterAlarmPin[1]);
+    // waterAlarm(2,waterAlarmPin[2]);
+    // waterAlarm(3,waterAlarmPin[3]);
+    // waterAlarm(4,waterAlarmPin[4]);
+    // waterAlarm(5,waterAlarmPin[5]);
 
     sendDataToServer();
-
-	//delay(100);
+	//delay(1000);
 }
 
 void fireAlarm(int alarmNumber, int alarmPin){
@@ -204,7 +198,8 @@ void temperature(int tempSensor){
                 tmp += temps[tempSensor][i];
             }
             tempStore[tempSensor][(jTemp[tempSensor])] = tmp/iTemp[tempSensor];
-            Serial.println("Temp store round");
+            Serial.print("Temp store round for temp sensor: ");
+            Serial.println(tempSensor);
             if(jTemp[tempSensor] == 2){
                 Serial.print("Temp store done 3 times for temp sensor: ");
                 Serial.println(tempSensor);
@@ -228,11 +223,56 @@ void temperature(int tempSensor){
         }
 }
 
-
 void sendDataToServer(){
     if(timeToSendData == true){
-        Serial.println("Sending data to server");
-        // Send data
+        // Adding timestamp to the data array
+        ts_now = now();
+        for(int i = 0; i < 4; i++){
+            data[data_counter] = (byte)((ts_now >> 8*(3 - i)) & 255);
+            data_counter++;
+        }
+
+        // Adding the temperatures to the data array
+        for(int i = 0; i < 4; i++){
+            data[data_counter + i] = (byte)((int)tempStore[0][0] >> 8*(3 - i));
+            data[data_counter + i + 4] = (byte)((int)tempStore[0][1] >> 8*(3 - i));
+            data[data_counter + i + 8] = (byte)((int)tempStore[0][2] >> 8*(3 - i));
+            data[data_counter + i + 12] = (byte)((int)tempStore[1][0] >> 8*(3 - i));
+            data[data_counter + i + 16] = (byte)((int)tempStore[1][1] >> 8*(3 - i));
+            data[data_counter + i + 20] = (byte)((int)tempStore[1][2] >> 8*(3 - i));
+            data[data_counter + i + 24] = (byte)((int)tempStore[2][0] >> 8*(3 - i));
+            data[data_counter + i + 28] = (byte)((int)tempStore[2][1] >> 8*(3 - i));
+            data[data_counter + i + 32] = (byte)((int)tempStore[2][2] >> 8*(3 - i));
+        }
+        data_counter +=  36;
+
+        // Add fire and water alarm state to the data array
+        data[data_counter] = (byte)(fireAlarmState[0]) | ((byte)(fireAlarmState[1]) << 1);
+        for (int i = 0; i < 6; i++){
+            data[data_counter] |= (byte)(waterAlarmState[i] << (2 + i);
+        }
+        data_counter += 1;
+
+        // Sending the data array
+        Serial.println("Sending this array of data to the server: ");
+        for(int i = 0; i < data_counter; i++){
+            Serial.print((byte)data[i]);
+            Serial.print(" ");
+        }
+        Serial.println(" ");
+        // if(GPRS_send(data, data_counter)){                      //Sending the data to the server.
+        //     Serial.println("Data was successfully sent!");
+        // }
+        // else{
+        //     Serial.println("ERROR: Failed to send data");
+        // }
+        data_counter = 15;           //Resetting the number of entries in data.
+        // if(NTP_sync()){
+        //     Serial.println("Synchronized time successfully!");
+        // }
+        // else{
+        //     Serial.println("Did not sync time successfully!");
+        // }
         timeToSendData = false;
     }
 }
