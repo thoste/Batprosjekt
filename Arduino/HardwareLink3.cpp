@@ -116,7 +116,7 @@ void modemStart(){
 			digitalWrite(8, HIGH); // Power GSM shield
     		delay(1000);
     		digitalWrite(8, LOW);
-    		delay(5000);
+    		delay(1000);
     		digitalWrite(9, HIGH);	// Reset GSM shiled
     		delay(1000);
     		digitalWrite(9, LOW);
@@ -147,8 +147,8 @@ bool GPRS_setup() {
 	const char cntp2[] PROGMEM = "AT+CNTP";  //Get network time
 	const char* commands[] = {clts, cgatt, cipmux, cstt, ciicr, sapbr1, sapbr2, sapbr3, sapbr4, sapbr5, cntp1, cntp2};
 	for(int i = 0; i < 12; i++){
-		Serial.println(i);
-		Serial.println((commands[i]));
+		// Serial.println(i);
+		// Serial.println((commands[i]));
 		print3(commands[i]); //Writes command to GSM-shield
 		if(!waitForOk(commands[i])){ //Waiting for OK from GSM-shield, retries 1 time if GSM-shield returns ERROR
 			return false; //Exit GPRS_setup() if command fails
