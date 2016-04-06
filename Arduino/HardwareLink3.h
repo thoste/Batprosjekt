@@ -14,7 +14,7 @@
 
 
  //GPRS / GSM communication
-  void modemStart();		//Writes pin code to modem.
+  void initModem();
   bool GPRS_setup();					//Writes AT commands needed to configure GPRS.
   
   bool sendSMS(char* num, char* msg);		//Sends msg as SMS to num.
@@ -39,3 +39,7 @@
 
   bool waitForOk(const char* command);
   void print3(const char* str);
+
+  void restartArduino();
+
+ 

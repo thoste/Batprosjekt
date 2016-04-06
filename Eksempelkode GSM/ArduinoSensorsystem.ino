@@ -29,7 +29,7 @@ IMEI = International Mobile Equipment Identity (identity of the modem) (15 digit
 /*INITIATIONS*/
 /*************/
 //MODEM
-long pincode = 4456;                          //The PIN code of the SIM card inserted in the modem.
+long pincode = 3200;                          //The PIN code of the SIM card inserted in the modem.
 byte* IMEI_nr = {};                           //Array that holds the IMEI number of the modem.
 
 //TIMESTAMP
@@ -100,7 +100,7 @@ void setup() {
 
   Serial.println(F("Modem booting"));
   delay(5000); 
-  //modemStart(pincode);    // Boot modem and enter PIN
+  modemStart(pincode);    // Boot modem and enter PIN
                          
   Serial.println(F("Modem boot completed"));
   Serial.println(F("Entering modem setup"));

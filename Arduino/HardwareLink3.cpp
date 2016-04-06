@@ -59,105 +59,209 @@ bool cmdError(char* str){
 	return false;
 }
 
+void initModem(){		
+	Serial.println("Power on modem");
+	digitalWrite(8, HIGH);
+	delay(1000);
+	digitalWrite(8, LOW);
+    delay(18000);
+  	Serial.println("Entering modem setup");
+  	
+  	if(GPRS_setup()){                              
+    	Serial.println("Modem setup completed");   
+  	}
+  	else{
+    	Serial.println(F("Modem setup failed"));
+    	restartArduino();
+  	}	 
+}
 
-
-
-
-
-
-//Writes pin code to modem, and waits until modem is finished booting.
-void modemStart(){
-	char str[128] = ""; 	//String to gather answer from modem.
+//Run this in setup() to configure GPRS communication.
+bool GPRS_setup(){
+	unsigned long millis_start_of_send = millis();
+	unsigned long max_wait = 15000;	//Maximum wait before time out.
+	char str[128] = "";
 	
-	pinMode(8, OUTPUT);		//Pin 8 is PWRKEY pin on the GSM-shield.
-    pinMode(9, OUTPUT);		//Pin 9 is RESTART pin on the GSM-shield.
-    digitalWrite(9, LOW);	//Setting both to low.
-    digitalWrite(8, LOW);	
-    delay(5000);
-    digitalWrite(8, HIGH); // Power GSM shield
-    delay(1000);
-    digitalWrite(8, LOW);
-    Serial.println("Power GSM shield");
-    delay(5000);
-    digitalWrite(9, HIGH);	// Reset GSM shiled
-    delay(1000);
-    digitalWrite(9, LOW);	
-    Serial.println("Reset GSM shield");
-    delay(5000);
-	
-	long loopcounter = 0;
-	
-	while(!rdy4pin(str)){				//Waits until the modem asks for pin code.
-		while(Serial3.available()){
+	flushReg();
+	Serial3.print(F("AT+CLTS=1"));		//Enable time update
+	submit(0);
+	while(!cmdOK(str)){
+		if(Serial3.available()){
 			cstringAppend(str, (char)Serial3.read());
 		}
-		if(loopcounter > 5000){			//If enough time has passed, we presume the modem is off.
-			digitalWrite(8, HIGH);		//We boot the modem.
-			delay(1000);
-			digitalWrite(8, LOW);
-			loopcounter = 0;
-			
-			str[0] = '\0';
+		if((unsigned long)millis() - millis_start_of_send >= max_wait){
+			return false; //Time out.
+		}
+	}
+	str[0] = '\0';	
+	
+	
+	
+	flushReg();
+	Serial3.print(F("AT+CGATT=1"));		//Attach to GPRS service
+	submit(0);
+	while(!cmdOK(str)){
+		if(Serial3.available()){
+			cstringAppend(str, (char)Serial3.read());
+		}
+		if((unsigned long)millis() - millis_start_of_send >= max_wait){
+			return false; //Time out.
+		}
+	}
+	str[0] = '\0';
+	
+	flushReg();
+	Serial3.print(F("AT+CIPMUX=0"));	//Configure single-IP connection
+	submit(0);
+	while(!cmdOK(str)){
+		if(Serial3.available()){
+			cstringAppend(str, (char)Serial3.read());
+		}
+		if((unsigned long)millis() - millis_start_of_send >= max_wait){
+			return false; //Time out.
+		}
+	}
+	str[0] = '\0';
+	
+	flushReg();	
+	Serial3.print(F("AT+CSTT=\"telenor\",\"dj\",\"dj\"")); 	//Start task, set APN, username and password
+	
+	//With some telecom operators it may take some time to get a valid IP address.
+	//If an invalid IP address is assigned, add a delay here.
+	
+	submit(0);
+	while(!cmdOK(str)){
+		if(Serial3.available()){
+			cstringAppend(str, (char)Serial3.read());
+		}
+		if((unsigned long)millis() - millis_start_of_send >= max_wait){
+			return false; //Time out.
+		}
+	}
+	str[0] = '\0';
+	
+	flushReg();
+	Serial3.print(F("AT+CIICR"));		//Bring up wireless connection with GPRS.
+	submit(0);
+	while(!cmdOK(str)){
+		if(Serial3.available()){
+			cstringAppend(str, (char)Serial3.read());
+		}
+		if((unsigned long)millis() - millis_start_of_send >= max_wait){
+			return false; //Time out.
+		}
+	}
+	str[0] = '\0';
+	
+	flushReg();
+	int fullStopCounter = 0;
+	Serial3.print(F("AT+CIFSR"));		//Get local IP address.
+	submit(0);
+	while(fullStopCounter < 3){
+		if(Serial3.available()){
+			if((char)Serial3.read() == '.'){
+				fullStopCounter++;
+			}
 		}
 		
-		delay(1);
-		loopcounter++;
 	}
 	str[0] = '\0';
-	loopcounter = 0;
+	
 	flushReg();
+	Serial3.print(F("AT+SAPBR=3,1,\"Contype\",\"GPRS\""));	//Activate bearer profile
 	submit(0);
-	while(!bootFinished(str)){		//Waits until boot is finished.
+	while(!cmdOK(str)){
 		if(Serial3.available()){
-			cstringAppend(str, (char)Serial3.read());	
+			cstringAppend(str, (char)Serial3.read());
 		}
-		if(loopcounter > 30000){			//If enough time has passed, the modem is stuck, we restart the booting process
-			Serial.println("Did not work.. Restarting the booting process");
-			digitalWrite(8, HIGH); // Power GSM shield
-    		delay(1000);
-    		digitalWrite(8, LOW);
-    		delay(1000);
-    		digitalWrite(9, HIGH);	// Reset GSM shiled
-    		delay(1000);
-    		digitalWrite(9, LOW);
-    		loopcounter = 0;
-    		str[0] = '\0';
-    		flushReg();
-			modemStart();
+		if((unsigned long)millis() - millis_start_of_send >= max_wait){
+			return false; //Time out.
 		}
-		delay(1);
-		loopcounter++;
 	}
 	str[0] = '\0';
-	return;
-}
-
-bool GPRS_setup() {
-	const char clts[] PROGMEM = "AT+CLTS=1"; //Enable time update
-	const char cgatt[] PROGMEM = "AT+CGATT=1"; //Attach to GPRS service
-	const char cipmux[] PROGMEM = "AT+CIPMUX=0"; //Configure single-IP connection
-	const char cstt[] PROGMEM = "AT+CSTT=\"telenor\",\"dj\",\"dj\""; //Start task, set APN, username and password
-	const char ciicr[] PROGMEM = "AT+CIICR"; //Bring up wireless connection with GPRS.
-	const char sapbr1[] PROGMEM = "AT+SAPBR=3,1,\"Contype\",\"GPRS\""; //Activate bearer profile
-	const char sapbr2[] PROGMEM = "AT+SAPBR=3,1,\"APN\",\"telenor\""; //Activate bearer profile
-	const char sapbr3[] PROGMEM = "AT+SAPBR=3,1,\"USER\",\"dj\""; //Activate bearer profile
-	const char sapbr4[] PROGMEM = "AT+SAPBR=3,1,\"PWD\",\"dj\""; //Activate bearer profile
-	const char sapbr5[] PROGMEM = "AT+SAPBR=1,1"; //Activate bearer profile
-	const char cntp1[] PROGMEM = "AT+CNTP=\"no.pool.ntp.org\",1,1,0";  //Connect to NTP server
-	const char cntp2[] PROGMEM = "AT+CNTP";  //Get network time
-	const char* commands[] = {clts, cgatt, cipmux, cstt, ciicr, sapbr1, sapbr2, sapbr3, sapbr4, sapbr5, cntp1, cntp2};
-	for(int i = 0; i < 12; i++){
-		// Serial.println(i);
-		// Serial.println((commands[i]));
-		print3(commands[i]); //Writes command to GSM-shield
-		if(!waitForOk(commands[i])){ //Waiting for OK from GSM-shield, retries 1 time if GSM-shield returns ERROR
-			return false; //Exit GPRS_setup() if command fails
+	
+	flushReg();
+	Serial3.print(F("AT+SAPBR=3,1,\"APN\",\"telenor\""));	//Activate bearer profile
+	submit(0);
+	while(!cmdOK(str)){
+		if(Serial3.available()){
+			cstringAppend(str, (char)Serial3.read());
+		}
+		if((unsigned long)millis() - millis_start_of_send >= max_wait){
+			return false; //Time out.
 		}
 	}
+	str[0] = '\0';	
+	
 	flushReg();
+	Serial3.print(F("AT+SAPBR=3,1,\"USER\",\"dj\""));	//Activate bearer profile
+	submit(0);
+	while(!cmdOK(str)){
+		if(Serial3.available()){
+			cstringAppend(str, (char)Serial3.read());
+		}
+		if((unsigned long)millis() - millis_start_of_send >= max_wait){
+			return false; //Time out.
+		}
+	}
+	str[0] = '\0';
+	
+	flushReg();
+	Serial3.print(F("AT+SAPBR=3,1,\"PWD\",\"dj\""));	//Activate bearer profile
+	submit(0);
+	while(!cmdOK(str)){
+		if(Serial3.available()){
+			cstringAppend(str, (char)Serial3.read());
+		}
+		if((unsigned long)millis() - millis_start_of_send >= max_wait){
+			return false; //Time out.
+		}
+	}
+	str[0] = '\0';
+	
+	flushReg();
+	Serial3.print(F("AT+SAPBR=1,1"));	//Activate bearer profile
+	submit(0);
+	while(!cmdOK(str)){
+		if(Serial3.available()){
+			cstringAppend(str, (char)Serial3.read());
+		}
+	}
+	str[0] = '\0';
+	
+	flushReg();
+	Serial3.print(F("AT+CNTP=\"no.pool.ntp.org\",1,1,0"));	//Connect to NTP server
+	submit(0);
+	while(!cmdOK(str)){
+		if(Serial3.available()){
+			cstringAppend(str, (char)Serial3.read());
+		}
+		if((unsigned long)millis() - millis_start_of_send >= max_wait){
+			return false; //Time out.
+		}
+	}
+	str[0] = '\0';
+	
+	flushReg();
+	Serial3.print(F("AT+CNTP"));	//Get network time
+	submit(0);
+	while(!cmdOK(str)){
+		if(Serial3.available()){
+			cstringAppend(str, (char)Serial3.read());
+		}
+		if((unsigned long)millis() - millis_start_of_send >= max_wait){
+			return false; //Time out.
+		}
+	}
+	str[0] = '\0';
+	
+	delay(2000); //Need a small delay here before we flush the receive register to sync time.
+	
+	flushReg();
+	
 	return true;
+	
 }
-
  
 void print3(const char* str){
 	flushReg();
@@ -284,7 +388,6 @@ int getSignalStrength(){
 		return -1;
 	}
 }
-
 
 //Sends array of bytes to the server.
 // Maximum data length: 1024 bytes.
@@ -476,6 +579,8 @@ long int get_unix_ts(){
 
 
 bool NTP_sync(){
+	unsigned long millis_start_of_send = millis();
+	unsigned long max_wait = 15000;	//Maximum wait before time out.
 	char str[64] = "";
 	flushReg();
 	Serial3.print(F("AT+CNTP"));	//Synchronize with the NTP server we connected to in GPRS_setup()
@@ -484,11 +589,12 @@ bool NTP_sync(){
 		if(Serial3.available()){
 			cstringAppend(str, (char)Serial3.read());
 		}
+		if((unsigned long)millis() - millis_start_of_send >= max_wait){
+			return false; //Time out.
+		}
 	}
-
 	return true;
 }
-
 
 //Empties the receive buffer 
 void flushReg(){
@@ -509,6 +615,14 @@ void submit(uint16_t time){
 
 	}
 	return;
+}
+
+void restartArduino(){
+	Serial.println("Restarting the Arduino");
+	delay(1000);
+	pinMode(18,OUTPUT);
+    digitalWrite(18,HIGH);
+    return;
 }
 
 

@@ -76,37 +76,37 @@ void modemStart(long int pin){
 	
 	long loopcounter = 0;
 	
-	// while(!rdy4pin(str)){				//Waits until the modem asks for pin code.
-	// 	while(Serial3.available()){
-	// 		cstringAppend(str, (char)Serial3.read());
-	// 	}
+	while(!rdy4pin(str)){				//Waits until the modem asks for pin code.
+		while(Serial3.available()){
+			cstringAppend(str, (char)Serial3.read());
+		}
 		
-	// 	if(loopcounter > 5000){			//If enough time has passed, we presume the modem is off.
-	// 		digitalWrite(8, HIGH);		//We boot the modem.
-	// 		delay(1000);
-	// 		digitalWrite(8, LOW);
+		if(loopcounter > 5000){			//If enough time has passed, we presume the modem is off.
+			digitalWrite(8, HIGH);		//We boot the modem.
+			delay(1000);
+			digitalWrite(8, LOW);
 			
-	// 		loopcounter = 0;
+			loopcounter = 0;
 			
-	// 		str[0] = '\0';
-	// 	}
+			str[0] = '\0';
+		}
 		 
-	// 	delay(1);
-	// 	loopcounter++;
+		delay(1);
+		loopcounter++;
 		
-	// }
-	// str[0] = '\0';
+	}
+	str[0] = '\0';
 	
 	flushReg();
-	// Serial3.print("AT+CPIN="); 		//Writes pin code to modem.
-	// Serial3.print(pin);
+	Serial3.print("AT+CPIN="); 		//Writes pin code to modem.
+	Serial3.print(pin);
 	submit(0);
 	
-	// while(!bootFinished(str)){		//Waits until boot is finished.
-	// 	if(Serial3.available()){
-	// 		cstringAppend(str, (char)Serial3.read());
-	// 	}
-	// }
+	while(!bootFinished(str)){		//Waits until boot is finished.
+		if(Serial3.available()){
+			cstringAppend(str, (char)Serial3.read());
+		}
+	}
 	
 	return;
 }
