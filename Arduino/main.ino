@@ -268,15 +268,18 @@ void sendDataToServer(){
             }
         }
 
-        // Add fire and water alarm state to the data array
+        // Add fire alarm state to the data array
         data[data_counter] = (byte)0;
         for(int i = 0; i < 2; i++){
             data[data_counter] |= (byte)((int)fireAlarmState[i] << i);
         }
-
+        // Add water alarm state to the data array
         for (int i = 0; i < 6; i++){
             data[data_counter] |= (byte)(((int)waterAlarmState[i]) << (2 + i));
         }
+        data_counter += 1;
+        // Add land power alarm state to the data array
+        data[data_counter] |= (byte)((int)powerAlarmState);
         data_counter += 1;
 
         // Sending the data array  
