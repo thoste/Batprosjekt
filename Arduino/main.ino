@@ -57,6 +57,15 @@ int minuteWaterAlarmStopp[6] = {0};
 int tmpWaterA[6] = {0};
 int tmpWaterB[6] = {0};
 
+// LAND POWER
+const int landPowerPin = 6;
+bool powerAlarmState = false;
+int counterPowerAlarm = 0;
+int minutePowerAlarmStart = 0;
+int minutePowerAlarmStopp = 0;
+int tmpPowerA = 0;
+int tmpPowerB = 0;
+
 
 void setup(){
     // Serial used for debugging
@@ -113,6 +122,8 @@ void setup(){
     pinMode(waterAlarmPin[3], INPUT);
     pinMode(waterAlarmPin[4], INPUT);
     pinMode(waterAlarmPin[5], INPUT);
+    // Land power pin
+    pinMode(landPowerPin, INPUT);
 
     delay(1000);
 
@@ -137,6 +148,8 @@ void loop(){
     waterAlarm(3,waterAlarmPin[3]);
     waterAlarm(4,waterAlarmPin[4]);
     waterAlarm(5,waterAlarmPin[5]);
+
+    landPower(landPowerPin);
 
     sendDataToServer();
 	delay(5000);
@@ -178,8 +191,25 @@ void waterAlarm(int alarmNumber, int alarmPin){
 	if(waterAlarmState[alarmNumber] == true){
 		timeCounter(&minuteWaterAlarmStart[alarmNumber], minuteWaterAlarmStopp[alarmNumber], &tmpWaterA[alarmNumber], &tmpWaterB[alarmNumber], &waterAlarmState[alarmNumber]);
 	}
-    if((waterAlarmState[0] == true && waterAlarmState[1] == true) || (waterAlarmState[0] == true && waterAlarmState[2] == true) || (waterAlarmState[1] == true && waterAlarmState[2] == true)){
-        sendAlarmSMS('W',0);
+}
+
+void landPower(int pin){
+    while(digitalRead(pin) == LOW && powerAlarmState != true){
+        counterPowerAlarm += 1;
+        delay(1000);
+        // Needs to be low for X seconds to raise an alarm
+        if(counterPowerAlarm == 10){
+            Serial.println("Land power alarm! No land power!");
+            counterPowerAlarm = 0;
+            minutePowerAlarmStart = minute();
+            tmpPowerA = minute();
+            minutePowerAlarmStopp = minutePowerAlarmStart + 10;
+            sendAlarmSMS('P', 0);
+            powerAlarmState = true;
+        }
+    }
+    if(powerAlarmState == true){
+        timeCounter(&minutePowerAlarmStart, minutePowerAlarmStopp, &tmpPowerA, &tmpPowerB, &powerAlarmState);
     }
 }
 
@@ -279,7 +309,6 @@ void sendDataToServer(){
     }
 }
 
-
 void sendAlarmSMS(char alarmType, int alarmNumber){
     switch(alarmType){
         case 'F': 
@@ -337,6 +366,15 @@ void sendAlarmSMS(char alarmType, int alarmNumber){
                     Serial.println("Unknown waterAlarm alarm number - Did not send any SMS");
             }
             break;
+        case 'P':
+            switch(alarmNumber){
+                case 0:
+                    Serial.println("No land power! - Sendin SMS");
+                    //sendSMS(phoneNumber, "Landstrømmen på båten er koblet ut!");
+                    break;
+                default:
+                    Serial.println("Unknown landPowerAlarm number - Did not send any SMS");
+            }
         default:
             Serial.println("Unknown alarm type - Did not send any SMS");
     }
