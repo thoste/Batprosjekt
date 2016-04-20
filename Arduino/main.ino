@@ -12,7 +12,7 @@ OneWire Bus(ONE_WIRE_BUS);
 DallasTemperature sensors(&Bus);
 
 // Phone number of the boat owner
-char* phoneNumber = "93266881";
+char* phoneNumber = "95174794";
 
 //MODEM
 byte* IMEI_nr = {};                           //Array that holds the IMEI number of the modem.
@@ -71,8 +71,6 @@ void setup(){
     // Serial used for debugging
     Serial.begin(9600);
 
-    //setTime(1458031892); // For now...
-
     // Modem startup
     Serial3.begin(4800);                            //We use Serial3 for communication with the modem.
     Serial.println(F("Modem booting"));
@@ -127,11 +125,10 @@ void setup(){
 
     delay(1000);
 
-    // sendSMS(phoneNumber, "Arduinbo bootup complete!");
-
     // After setup its time to sample the temperatures
     tempSampleState = true;
 
+    sendSMS(phoneNumber, "Arduinbo bootup complete!");
     Serial.println("Setup completed!");
 }
 
@@ -252,7 +249,6 @@ void sendDataToServer(){
             data_counter++;
         }
 
-
         //Adding the temperatures to the data array
         union {
             float temp;
@@ -303,6 +299,11 @@ void sendDataToServer(){
         data_counter = 15;           //Resetting the number of entries in data.
         delay(1000);
         if(NTP_sync()){
+            //Time sync
+            ts_synced = get_unix_ts();                      //Synchronizing time
+            setTime(ts_synced);                             //Sets local Arduino time to the server time
+            Serial.print("Time sync: ");
+            Serial.println(ts_synced);
             Serial.println("Synchronized time successfully!");
         }
         else{
@@ -313,74 +314,75 @@ void sendDataToServer(){
 }
 
 void sendAlarmSMS(char alarmType, int alarmNumber){
-    switch(alarmType){
-        case 'F': 
-            switch(alarmNumber){
-                case 0:
-                    Serial.println("Fire in the engine room - Sending SMS");
-                    // sendSMS(phoneNumber, "Det brenner i motorrommet på båten!");
-                    break;
-                case 1:
-                    Serial.println("Fire in the kitchen - Sending SMS");
-                    // sendSMS(phoneNumber, "Det brenner i lugaren på båten!");
-                    break;
-                default:
-                    Serial.println("Unknown fire alarm number - Did not send any SMS");
-            }
-            break;
-        case 'W':
-            switch(alarmNumber){
-                case 0:
-                    if(waterAlarmState[1] == true || waterAlarmState[2] == true){
-                        Serial.println("Water in the engine room - Sending SMS");
-                        //sendSMS(phoneNumber, "Det er vann i motorrommet på båten!");
-                    }
-                    break;
-                case 1:
-                    if(waterAlarmState[0] == true || waterAlarmState[2] == true){
-                        Serial.println("Water in the engine room - Sending SMS");
-                        //sendSMS(phoneNumber, "Det er vann i motorrommet på båten!");
-                    }
-                    break;
-                case 2:
-                    if(waterAlarmState[0] == true || waterAlarmState[1] == true){
-                        Serial.println("Water in the engine room - Sending SMS");
-                        //sendSMS(phoneNumber, "Det er vann i motorrommet på båten!");
-                    }
-                case 3:
-                    if(waterAlarmState[4] == true || waterAlarmState[5] == true){
-                        Serial.println("Water in the lounge - Sending SMS");
-                        //sendSMS(phoneNumber, "Det er vann i salongen på båten!");
-                    }
-                    break;
-                case 4:
-                    if(waterAlarmState[3] == true || waterAlarmState[5] == true){
-                        Serial.println("Water in the lounge - Sending SMS");
-                        //sendSMS(phoneNumber, "Det er vann i salongen på båten!");
-                    }
-                    break;
-                case 5:
-                    if(waterAlarmState[3] == true || waterAlarmState[4] == true){
-                        Serial.println("Water in the lounge - Sending SMS");
-                        //sendSMS(phoneNumber, "Det er vann i salongen på båten!");
-                    }
-                    break;
-                default:
-                    Serial.println("Unknown waterAlarm alarm number - Did not send any SMS");
-            }
-            break;
-        case 'P':
-            switch(alarmNumber){
-                case 0:
-                    Serial.println("No land power! - Sendin SMS");
-                    //sendSMS(phoneNumber, "Landstrømmen på båten er koblet ut!");
-                    break;
-                default:
-                    Serial.println("Unknown landPowerAlarm number - Did not send any SMS");
-            }
-        default:
-            Serial.println("Unknown alarm type - Did not send any SMS");
+    if(alarmType == 'F'){
+        switch(alarmNumber){
+            case 0:
+                Serial.println("Fire in the engine room - Sending SMS");
+                // sendSMS(phoneNumber, "Det brenner i motorrommet på båten!");
+                break;
+            case 1:
+                Serial.println("Fire in the kitchen - Sending SMS");
+                // sendSMS(phoneNumber, "Det brenner i lugaren på båten!");
+                break;
+            default:
+                Serial.println("Unknown fire alarm number - Did not send any SMS");
+        }
     }
+    else if(alarmType == 'W'){
+        switch(alarmNumber){
+            case 0:
+                if(waterAlarmState[1] == true || waterAlarmState[2] == true){
+                    Serial.println("Water in the engine room - Sending SMS");
+                    //sendSMS(phoneNumber, "Det er vann i motorrommet på båten!");
+                }
+                break;
+            case 1:
+                if(waterAlarmState[0] == true || waterAlarmState[2] == true){
+                    Serial.println("Water in the engine room - Sending SMS");
+                    //sendSMS(phoneNumber, "Det er vann i motorrommet på båten!");
+                }
+                break;
+            case 2:
+                if(waterAlarmState[0] == true || waterAlarmState[1] == true){
+                    Serial.println("Water in the engine room - Sending SMS");
+                    //sendSMS(phoneNumber, "Det er vann i motorrommet på båten!");
+                }
+            case 3:
+                if(waterAlarmState[4] == true || waterAlarmState[5] == true){
+                    Serial.println("Water in the lounge - Sending SMS");
+                    //sendSMS(phoneNumber, "Det er vann i salongen på båten!");
+                }
+                break;
+            case 4:
+                if(waterAlarmState[3] == true || waterAlarmState[5] == true){
+                    Serial.println("Water in the lounge - Sending SMS");
+                    //sendSMS(phoneNumber, "Det er vann i salongen på båten!");
+                }
+                break;
+            case 5:
+                if(waterAlarmState[3] == true || waterAlarmState[4] == true){
+                    Serial.println("Water in the lounge - Sending SMS");
+                    //sendSMS(phoneNumber, "Det er vann i salongen på båten!");
+                }
+                break;
+            default:
+                Serial.println("Unknown waterAlarm alarm number - Did not send any SMS");
+        }
+    }
+    else if(alarmType == 'P'){
+        switch(alarmNumber){
+            case 0:
+                Serial.println("No land power! - Sending SMS");
+                //sendSMS(phoneNumber, "Landstrømmen på båten er koblet ut!");
+                break;
+            default:
+                Serial.println("Unknown landPowerAlarm number - Did not send any SMS");
+        }
+    }
+    else{
+        Serial.println("Unknown alarm type - Did not send any SMS");
+    }
+    
 }
 
 void timeCounter(int *timeStart, int timeStop, int *tmpA, int *tmpB, bool *state){
