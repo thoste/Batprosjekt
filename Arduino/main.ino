@@ -113,13 +113,16 @@ void setup(){
     // Fire sensor pins
     pinMode(fireAlarmPin[0], INPUT);
     pinMode(fireAlarmPin[1], INPUT);
+
     // Water sensor pins
     pinMode(waterAlarmPin[0], INPUT);
     pinMode(waterAlarmPin[1], INPUT);
     pinMode(waterAlarmPin[2], INPUT);
-    pinMode(waterAlarmPin[3], INPUT);
-    pinMode(waterAlarmPin[4], INPUT);
-    pinMode(waterAlarmPin[5], INPUT);
+    // WATER 2
+    // pinMode(waterAlarmPin[3], INPUT);
+    // pinMode(waterAlarmPin[4], INPUT);
+    // pinMode(waterAlarmPin[5], INPUT);
+
     // Land power pin
     pinMode(landPowerPin, INPUT);
 
@@ -351,24 +354,25 @@ void sendAlarmSMS(char alarmType, int alarmNumber){
                     Serial.println("Water in the engine room - Sending SMS");
                     sendSMS(phoneNumber, "Det er vann i motorrommet på båten!");
                 }
-            case 3:
-                if(waterAlarmState[4] == true || waterAlarmState[5] == true){
-                    Serial.println("Water in the lounge - Sending SMS");
-                    sendSMS(phoneNumber, "Det er vann i salongen på båten!");
-                }
                 break;
-            case 4:
-                if(waterAlarmState[3] == true || waterAlarmState[5] == true){
-                    Serial.println("Water in the lounge - Sending SMS");
-                    sendSMS(phoneNumber, "Det er vann i salongen på båten!");
-                }
-                break;
-            case 5:
-                if(waterAlarmState[3] == true || waterAlarmState[4] == true){
-                    Serial.println("Water in the lounge - Sending SMS");
-                    sendSMS(phoneNumber, "Det er vann i salongen på båten!");
-                }
-                break;
+            // case 3:
+            //     if(waterAlarmState[4] == true || waterAlarmState[5] == true){
+            //         Serial.println("Water in the lounge - Sending SMS");
+            //         sendSMS(phoneNumber, "Det er vann i salongen på båten!");
+            //     }
+            //     break;
+            // case 4:
+            //     if(waterAlarmState[3] == true || waterAlarmState[5] == true){
+            //         Serial.println("Water in the lounge - Sending SMS");
+            //         sendSMS(phoneNumber, "Det er vann i salongen på båten!");
+            //     }
+            //     break;
+            // case 5:
+            //     if(waterAlarmState[3] == true || waterAlarmState[4] == true){
+            //         Serial.println("Water in the lounge - Sending SMS");
+            //         sendSMS(phoneNumber, "Det er vann i salongen på båten!");
+            //     }
+            //     break;
             default:
                 Serial.println("Unknown waterAlarm alarm number - Did not send any SMS");
         }
